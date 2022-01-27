@@ -17,7 +17,20 @@ pip install -r req.txt
 ```
 
 ## Run
+
+First, update the dictionary with the values for your prediction. For my test, Decision Tree performed the best, so we ran the prediction with that model.
+
 Run code either in an IDE or in the terminal with:
 ```bash
 python3 predict_weight.py
 ```
+
+## Improvements
+
+- This was written in just under two hours initially, so no feature selection was done on the variables. Ideally, we'd look at more than just 5 predictor variables and analyze the amount of variance explained by each variable to decide what to keep and what to remove.
+- Automatically run predictions on the best performing model using the 'metrics' package
+- Allow variable inputs via terminal
+
+## Bet results
+
+I never actually ran this to predict the weight of my new-born cousin as this required me to ask my cousin in-law how much weight she gained during pregnancy. I went with a safe bet of 8 pounds 10 oz and lost.
