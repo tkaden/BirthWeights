@@ -21,7 +21,7 @@ def get_data():
     df_init = []
 
     with open("../BirthWeights/Nat2020_cut.txt", "r") as file:
-        head = [next(file) for x in range(1000)]
+        head = [next(file) for x in range(500)]
 
 
     for line in head:
@@ -30,14 +30,14 @@ def get_data():
                    'YEAR':      int(line[8:12]),
                    'M_Ht':      int(line[279:281]),  # if 99, no reporting
                    'M_Age':     int(line[74:76]),
-                   'Lst_Prg':   int(line[280:281]),  # 88=FstPregnancy (cat)
-                   'Wt_Gain':   int(line[305:306]),  # 9=unknown (cat)
+                   'Lst_Prg':   int(line[178:179]),  # 1-8 Live pregnancies
+                   'Wt_Gain':   int(line[303:305]),  # 9=unknown (cat)
                    'SEX':       line[474:475],
                    'GEST':      int(line[489:491]),
                    'BWt':       int(line[503:507]) # measured in grams
                    }
 
-        if list(new_row.values())[1] != 99 and list(new_row.values())[6] != 99 and list(new_row.values())[7] != 9999 and list(new_row.values())[3] != ' ':
+        if list(new_row.values())[1] != 99 and list(new_row.values())[6] != 99 and list(new_row.values())[7] != 9999 and list(new_row.values())[3] != 9:
             df_init.append(new_row)
 
     return pd.DataFrame(df_init)
@@ -54,8 +54,8 @@ df['SEX'] = [0 if x =='F' else 1 for x in df['SEX']]
 df['Wt_Gain'] = df['Wt_Gain'].astype("category")
 df['Lst_Prg'] = df['Lst_Prg'].astype("category")
 
-y = df['BWt']
-X = df[['M_Ht', 'M_Age', 'Lst_Prg', 'Wt_Gain', 'SEX', 'GEST']]
+y = df['BWt'].values
+X = df[['M_Ht', 'M_Age', 'Lst_Prg', 'Wt_Gain', 'SEX', 'GEST']].values
 
 dt = DecisionTreeRegressor(random_state=0, max_depth=5, min_samples_leaf=5, criterion='mse').fit(X, y)
 lg = sm.OLS(y, sm.add_constant(X)).fit()
@@ -68,7 +68,7 @@ ri = Ridge().fit(X, y)
 gp = GaussianProcessRegressor(kernel=(DotProduct() + WhiteKernel())).fit(X, y)
 nsvm = make_pipeline(StandardScaler(), NuSVR(C=.9, nu=.8)).fit(X, y)
 
-
+print("The higher the better: ")
 dt_scores = cross_val_score(dt, X, y, cv = 5, scoring='neg_mean_squared_error')
 print("DT Average Score = ", round(np.mean(dt_scores), 4))
 
@@ -95,3 +95,24 @@ print("GP Average Score = ", round(np.mean(gp_scores), 4))
 
 nsvm_scores = cross_val_score(nsvm, X, y, cv = 5, scoring='neg_mean_squared_error')
 print("NSVM Average Score = ", round(np.mean(nsvm_scores), 4))
+
+X = df[['M_Ht', 'M_Age', 'Lst_Prg', 'Wt_Gain', 'SEX', 'GEST']]
+
+run = {
+    'M_Ht': 64,  # inches
+    'M_Age': 25,  # years
+    'Lst_Prg': 1,  # number of live births 1-8 (1 = this being first birth)
+    'Wt_Gain': 50,  # pounds
+    'SEX': 1,  # 0=F, 1=M
+    'Gest': 40  # weeks
+}
+
+print("DT prediction = ", dt.predict([list(run.values())]))
+# print("LDA prediction = ", lda.predict([list(run.values())]))
+# print("SVM prediction = ", svm.predict([list(run.values())]))
+print("KNN prediction = ", knn.predict([list(run.values())]))
+# print("NN prediction = ", nn.predict([list(run.values())]))
+# print("LA prediction = ", la.predict([list(run.values())]))
+# print("RI prediction = ", ri.predict([list(run.values())]))
+# print("GP prediction = ", gp.predict([list(run.values())]))
+#print("NSVM prediction = ", nsvm.predict([list(run.values())]))
